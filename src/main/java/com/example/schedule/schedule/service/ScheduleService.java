@@ -7,6 +7,9 @@ import com.example.schedule.schedule.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.schedule.user.entity.User;
+import com.example.schedule.user.repository.UserRepository;
+
 
 import java.util.List;
 
@@ -15,12 +18,18 @@ import java.util.List;
 public class ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     public ScheduleResponseDto createSchedule(ScheduleRequestDto requestDto) {
 
+        User user = userRepository.findById(requestDto.getUserId())
+                .orElseThrow(() ->
+                        new IllegalArgumentException("해당 유저가 없습니다.")
+                );
+
         Schedule schedule = new Schedule(
-                requestDto.getUsername(),
+                user,
                 requestDto.getTitle(),
                 requestDto.getContent()
         );
@@ -53,12 +62,12 @@ public class ScheduleService {
             Long id,
             ScheduleRequestDto requestDto
     ) {
-
         Schedule schedule = scheduleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 일정이 존재하지 않습니다."));
+                .orElseThrow(() ->
+                        new IllegalArgumentException("해당 일정이 존재하지 않습니다.")
+                );
 
         schedule.update(
-                requestDto.getUsername(),
                 requestDto.getTitle(),
                 requestDto.getContent()
         );
